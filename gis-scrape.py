@@ -1,21 +1,32 @@
+#
+# Google image-by-image search scraper
+# Author: Erik Rodner, 2014
+# This is research code only and should not be used to perform large-scale queries
 import sys
 import os
+# command line parsing
 import argparse
+# random selection of user agents
 import random
+# XML/HTML parsing
 import xml.etree
 from xml.etree import ElementTree
+import libxml2
+from HTMLParser import HTMLParser
+# naturual language tools for sanitizing results
 import nltk
+# regular expressions for sanitizing results
 import re
-
+# check for ssl availability in general
 try:
     import ssl
 except ImportError:
     print "error: no ssl support"
-
+# library for performing HTTP(S) requests
 import urllib2
-import libxml2
-from HTMLParser import HTMLParser
 
+
+""" Parser model to extract the content only and not the tags """
 class MyHTMLParser(HTMLParser):
     datafields = []    
 
@@ -28,6 +39,7 @@ class MyHTMLParser(HTMLParser):
     def clean(self):
         self.datafields = []
 
+""" HTTP request with libcurl """
 def get_raw_html_libcurl(request_url, user_agent):
     import pycurl
     import StringIO
@@ -51,7 +63,7 @@ def get_raw_html_libcurl(request_url, user_agent):
 
     return result_stringio.getvalue()
 
-
+""" HTTP request with urllib (default) """
 def get_raw_html_urllib(request_url, user_agent):
     #req = urllib2.urlopen( request_url )
     opener = urllib2.build_opener()
@@ -59,51 +71,70 @@ def get_raw_html_urllib(request_url, user_agent):
     response = opener.open(request_url)
     return response.read()
 
+""" for manual sanitizing """
 def remove_containing_word(s, words):
     for w in words:
         s = re.sub('[^ ]*%s[^ ]*' % w, '', s)
     return s
 
+""" sanitizing results with natural language tools """
 def sanitize_result(s):
+    # manual sanitizing 
     #s = remove_containing_word(s, ['http://', 'www\.']    )
     #s = remove_containing_word(s, ['\.com', '\.org', '\.net'])
     #s = remove_containing_word(s, ['\.jpg', '\.jpeg', '\.png'] )
     #s = re.sub("[^a-zA-Z0-9 -]+", "", s)
+
+    # remove ), (, and % 
     s = re.sub('[\(\)\%]+', '', s)
+    if len(s)==0:
+        return s
+
+    # split into tokens
     tokens = nltk.word_tokenize(s)
+    # tag the tokens
     tagged_tokens = nltk.pos_tag( tokens )
+    # we only want to extract proper nouns, etc.
     grammar = "NP: {(<NN>|<NNP>|<NNS>)+}"
+    # parse the tagged tokens
     cp = nltk.RegexpParser(grammar)
     parsed_sentence = cp.parse(tagged_tokens)
+    # go through the parsing result and put everything into a string
     terms = []
     for e in parsed_sentence:
         if not isinstance(e,tuple):
             for term in e:
                 if len(term[0])>1:
                     terms.append( term[0] )
-       
+    # join results and make everything lowercase
     s = ' '.join(terms)
     s = s.lower()
 
     return s
  
-
+""" obtain all xpath results in a string """
 def get_simple_xpath( doc, xpath ):
     ctxt = doc.xpathNewContext()
+    # get xpath result
     xp_results  = ctxt.xpathEval(xpath)
     results = []
     i = 0
+    # simply remove all tags
     parser = MyHTMLParser()
     parser.clean()
     for xp in xp_results:
-        parser.feed( str(xp) )
+        s = str(xp)
+        if len(s)>0:
+            parser.feed( s )
     
     ctxt.xpathFreeContext()
-
+    
+    # sanitize the results
     return sanitize_result(parser.get_data())
 
 #######################################
 
+# command line parser
 parser = argparse.ArgumentParser(description='Google image-by-image scraper')
 parser.add_argument('--plainoutput', action='store_true')
 parser.add_argument('urls', metavar='url', help='some URLS to images', nargs='+')
@@ -113,6 +144,9 @@ args = parser.parse_args()
 
 xpath = {}
 
+# xpaths for different fields on the result page of Google image-by-image search
+# if the interface is changed, this is the part that needs modification
+# there are web browser plugins that provide you with proper xpaths
 xpath['bestguess'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='topstuff']/div[@class='card-section']/div[@class='qb-bmqc']/a[@class='qb-b']"
 
 xpath['desc'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][3]/div[@id='rhscol']/div[@id='rhs']/div[@id='rhs_block']/ol/li[@class='g mnr-c rhsvw g-blk']/div[@class='kp-blk _m2 _Lv _KO']"
@@ -122,7 +156,7 @@ xpath['summaries'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@
 
 xpath['titles'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/div[@class='srg']/li[@class='g']/div[@class='rc']/h3[@class='r']/a"
 
-
+# download all URLs, parse them, write results to the data dictionary
 scrapeResults = {}
 for image_url in args.urls:
     image_url_escaped = urllib2.quote(image_url,'')
@@ -153,6 +187,7 @@ for image_url in args.urls:
     doc.freeDoc()
 
 
+# output of the results
 if args.plainoutput:
     for imagefn in scrapeResults:
         print
