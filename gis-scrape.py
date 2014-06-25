@@ -89,58 +89,79 @@ def sanitize_result(s):
  
 
 def get_simple_xpath( doc, xpath ):
-    xp_results  = doc.xpathEval(xpath)
+    ctxt = doc.xpathNewContext()
+    xp_results  = ctxt.xpathEval(xpath)
     results = []
     i = 0
     parser = MyHTMLParser()
+    parser.clean()
     for xp in xp_results:
         parser.feed( str(xp) )
+    
+    ctxt.xpathFreeContext()
 
     return sanitize_result(parser.get_data())
 
-def get_best_guess(doc):
-    xpath = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='topstuff']/div[@class='card-section']/div[@class='qb-bmqc']/a[@class='qb-b']"
-    return get_simple_xpath( doc, xpath )
+#######################################
 
-def get_semantic_description(doc):
-    xpath = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][3]/div[@id='rhscol']/div[@id='rhs']/div[@id='rhs_block']/ol/li[@class='g mnr-c rhsvw g-blk']/div[@class='kp-blk _m2 _Lv _KO']"
-    return get_simple_xpath( doc, xpath )
+parser = argparse.ArgumentParser(description='Google image-by-image scraper')
+parser.add_argument('--plainoutput', action='store_true')
+parser.add_argument('urls', metavar='url', help='some URLS to images', nargs='+')
+parser.add_argument('--verbose', action='store_true')
+parser.add_argument('--gisroot', help='do not change unless you know what you are doing', default='https://www.google.com/searchbyimage?&image_url=')
+args = parser.parse_args()
 
-def get_website_summaries(doc):
-    #xpath = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/div[@class='srg'][1]/li[@class='g'][1]/div[@class='rc']/div[@class='s']/div/span[@class='st']"
-    #xpath = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/div[@class='srg'][1]/li[@class='g'][2]/div[@class='rc']/div[@class='s']/div/span[@class='st']"
-    #xpath = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/div[@class='srg'][2]/li[@class='g'][1]/div[@class='rc']/div[@class='s']/div[2]/span[@class='st']"
-    #xpath = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/div[@class='srg'][2]/li[@class='g'][2]/div[@class='rc']/div[@class='s']/div[2]/span[@class='st']"
-   
+xpath = {}
+
+xpath['bestguess'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='topstuff']/div[@class='card-section']/div[@class='qb-bmqc']/a[@class='qb-b']"
+
+xpath['desc'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][3]/div[@id='rhscol']/div[@id='rhs']/div[@id='rhs_block']/ol/li[@class='g mnr-c rhsvw g-blk']/div[@class='kp-blk _m2 _Lv _KO']"
+
+# this xpath was built by removing explicit element access (just get several xpaths and try to see a pattern) 
+xpath['summaries'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/div[@class='srg']/li[@class='g']/div[@class='rc']/div[@class='s']/div/span[@class='st']" 
+
+xpath['titles'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/div[@class='srg']/li[@class='g']/div[@class='rc']/h3[@class='r']/a"
+
+
+scrapeResults = {}
+for image_url in args.urls:
+    image_url_escaped = urllib2.quote(image_url,'')
+    request_url = args.gisroot + image_url_escaped
+
+    # select user agent
+    with open('useragents.txt', 'r') as uafile:
+        user_agents = uafile.readlines()
+    user_agent = random.choice(user_agents).rstrip()
+
+    if args.verbose:
+        print "Search URL: ", request_url
+        print "UA: ", user_agent
+
+    gis_raw_result = get_raw_html_urllib( request_url, user_agent )
+
+    parse_options = libxml2.HTML_PARSE_RECOVER + libxml2.HTML_PARSE_NOERROR + libxml2.HTML_PARSE_NOWARNING
+
+    doc = libxml2.htmlReadDoc( gis_raw_result, '', None, parse_options)
+
+    scrapeResult = {}
+    for key in xpath:
+        r = get_simple_xpath(doc, xpath[key])
+        scrapeResult[key] = r
+
+    scrapeResults[image_url] = scrapeResult
     
-    xpath = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/div[@class='srg']/li[@class='g']/div[@class='rc']/div[@class='s']/div/span[@class='st']" 
-
-    return get_simple_xpath( doc, xpath )
+    doc.freeDoc()
 
 
-##################################
-google_gis_root_url = 'https://www.google.com/searchbyimage?&image_url=' 
-image_url = sys.argv[1]
-image_url_escaped = urllib2.quote(image_url,'')
-request_url = google_gis_root_url + image_url_escaped
+if args.plainoutput:
+    for imagefn in scrapeResults:
+        print
+        print imagefn
+        for key in scrapeResults[imagefn]:
+            print key, ": ", scrapeResult[key]
+else:
+    import json
+    print json.dumps( scrapeResults, indent=4, sort_keys=False)
 
-# select user agent
-with open('useragents.txt', 'r') as uafile:
-    user_agents = uafile.readlines()
-user_agent = random.choice(user_agents).rstrip()
 
-print "Search URL: ", request_url
-print "UA: ", user_agent
-gis_raw_result = get_raw_html_urllib( request_url, user_agent )
-
-parse_options = libxml2.HTML_PARSE_RECOVER + libxml2.HTML_PARSE_NOERROR + libxml2.HTML_PARSE_NOWARNING
-
-doc = libxml2.htmlReadDoc( gis_raw_result, '', None, parse_options)
-
-print "Best guesses: ", get_best_guess ( doc )
-print 
-print "Semantic description: ", get_semantic_description ( doc )
-print
-print "Website description: ", get_website_summaries( doc )
-doc.freeDoc()
 
