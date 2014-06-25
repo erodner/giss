@@ -1,7 +1,7 @@
-GIS-Scrape
+GISS: Google image-by-image search scraper
 ====================================
 
-Google reverse image search scraper in python to get the best guess result with xpath queries.
+Google image-by-image search scraper in python to get the best guess result and webpage summaries with xpath queries.
 
 Author: Erik Rodner (https://github.com/erodner)
 
