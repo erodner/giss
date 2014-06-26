@@ -1,7 +1,11 @@
 #
 # Google image-by-image search scraper
 # Author: Erik Rodner, 2014
+#
 # This is research code only and should not be used to perform large-scale queries
+#
+#
+#
 import sys
 import os
 # command line parsing
@@ -135,11 +139,12 @@ def get_simple_xpath( doc, xpath ):
 #######################################
 
 # command line parser
-parser = argparse.ArgumentParser(description='Google image-by-image scraper')
+parser = argparse.ArgumentParser(description='Google image-by-image search scraper (GISS), authored by Erik Rodner')
 parser.add_argument('--plainoutput', action='store_true', help='output the results in plain format rather than')
 parser.add_argument('urls', metavar='url', help='some URLS to images', nargs='+')
 parser.add_argument('--verbose', action='store_true')
 parser.add_argument('--gisroot', help='do not change unless you know what you are doing', default='https://www.google.com/searchbyimage?&image_url=')
+parser.add_argument('--useragents', help='file with a list of user agents (GISS is using a random user agent everytime')
 args = parser.parse_args()
 
 xpath = {}
@@ -156,6 +161,10 @@ xpath['summaries'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@
 
 xpath['titles'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/div[@class='srg']/li[@class='g']/div[@class='rc']/h3[@class='r']/a"
 
+# get list of user agents
+with open(args.useragents, 'r') as uafile:
+    user_agents = uafile.readlines()
+
 # download all URLs, parse them, write results to the data dictionary
 scrapeResults = {}
 for image_url in args.urls:
@@ -163,8 +172,6 @@ for image_url in args.urls:
     request_url = args.gisroot + image_url_escaped
 
     # select user agent
-    with open('useragents.txt', 'r') as uafile:
-        user_agents = uafile.readlines()
     user_agent = random.choice(user_agents).rstrip()
 
     if args.verbose:

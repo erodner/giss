@@ -13,6 +13,28 @@ greedy (for good reason!), so use this code carefully and with proper reasoning.
 Usage
 ====================================
 
+    usage: gis-scrape.py [-h] [--plainoutput] [--verbose] [--gisroot GISROOT]
+                         [--useragents USERAGENTS]
+                         url [url ...]
+
+    Google image-by-image search scraper (GISS), authored by Erik Rodner
+
+    positional arguments:
+      url                   some URLS to images
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --plainoutput         output the results in plain format rather than
+      --verbose
+      --gisroot GISROOT     do not change unless you know what you are doing
+      --useragents USERAGENTS
+                            file with a list of user agents (GISS is using a
+                            random user agent everytime
+
+
+Examples
+====================================
+
 Example call:
 
     python gis-scrape.py  'http://www.discoverlife.org/nh/tx/Cnidaria/images/Chrysaora_quinquecirrha,I_JP13_1.240.jpg' 'http://upload.wikimedia.org/wikipedia/commons/b/b6/Okapia_johnstoni_-Marwell_Wildlife,_Hampshire,_England-8a.jpg'
