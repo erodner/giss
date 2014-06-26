@@ -136,7 +136,7 @@ def get_simple_xpath( doc, xpath ):
 
 # command line parser
 parser = argparse.ArgumentParser(description='Google image-by-image scraper')
-parser.add_argument('--plainoutput', action='store_true')
+parser.add_argument('--plainoutput', action='store_true', help='output the results in plain format rather than')
 parser.add_argument('urls', metavar='url', help='some URLS to images', nargs='+')
 parser.add_argument('--verbose', action='store_true')
 parser.add_argument('--gisroot', help='do not change unless you know what you are doing', default='https://www.google.com/searchbyimage?&image_url=')
