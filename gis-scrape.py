@@ -159,7 +159,11 @@ xpath['desc'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='r
 # this xpath was built by removing explicit element access (just get several xpaths and try to see a pattern) 
 xpath['summaries'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/div[@class='srg']/li[@class='g']/div[@class='rc']/div[@class='s']/div/span[@class='st']" 
 
+xpath['summaries_alternative'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/li[@class='g'][1]/div[@class='rc']/div[@class='s']/div/span[@class='st']"
+
 xpath['titles'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/div[@class='srg']/li[@class='g']/div[@class='rc']/h3[@class='r']/a"
+
+xpath['titles_alternative'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/li[@class='g']/div[@class='rc']/h3[@class='r']/a"
 
 # get list of user agents
 with open(args.useragents, 'r') as uafile:
