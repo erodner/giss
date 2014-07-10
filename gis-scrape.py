@@ -144,7 +144,7 @@ parser.add_argument('--plainoutput', action='store_true', help='output the resul
 parser.add_argument('urls', metavar='url', help='some URLS to images', nargs='+')
 parser.add_argument('--verbose', action='store_true')
 parser.add_argument('--gisroot', help='do not change unless you know what you are doing', default='https://www.google.com/searchbyimage?&image_url=')
-parser.add_argument('--useragents', help='file with a list of user agents (GISS is using a random user agent everytime')
+parser.add_argument('--useragents', help='file with a list of user agents (GISS is using a random user agent everytime', default='useragents.txt')
 args = parser.parse_args()
 
 xpath = {}
