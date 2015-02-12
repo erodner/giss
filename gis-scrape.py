@@ -32,7 +32,7 @@ import urllib2
 
 """ Parser model to extract the content only and not the tags """
 class MyHTMLParser(HTMLParser):
-    datafields = []    
+    datafields = []
 
     def handle_data(self, data):
         self.datafields.append(data)
@@ -83,13 +83,13 @@ def remove_containing_word(s, words):
 
 """ sanitizing results with natural language tools """
 def sanitize_result(s):
-    # manual sanitizing 
+    # manual sanitizing
     #s = remove_containing_word(s, ['http://', 'www\.']    )
     #s = remove_containing_word(s, ['\.com', '\.org', '\.net'])
     #s = remove_containing_word(s, ['\.jpg', '\.jpeg', '\.png'] )
     #s = re.sub("[^a-zA-Z0-9 -]+", "", s)
 
-    # remove ), (, and % 
+    # remove ), (, and %
     s = re.sub('[\(\)\%]+', '', s)
     if len(s)==0:
         return s
@@ -115,7 +115,7 @@ def sanitize_result(s):
     s = s.lower()
 
     return s
- 
+
 """ obtain all xpath results in a string """
 def get_simple_xpath( doc, xpath ):
     ctxt = doc.xpathNewContext()
@@ -130,9 +130,8 @@ def get_simple_xpath( doc, xpath ):
         s = str(xp)
         if len(s)>0:
             parser.feed( s )
-    
+
     ctxt.xpathFreeContext()
-    
     # sanitize the results
     return sanitize_result(parser.get_data())
 
@@ -152,16 +151,16 @@ xpath = {}
 # xpaths for different fields on the result page of Google image-by-image search
 # if the interface is changed, this is the part that needs modification
 # there are web browser plugins that provide you with proper xpaths
-xpath['bestguess'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='topstuff']/div[@class='card-section']/div[@class='qb-bmqc']/a[@class='qb-b']"
+xpath['bestguess'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@class='mw']/div[@id='rcnt']/div[@class='col'][1]/div[@id='center_col']/div[@id='res']/div[@id='topstuff']/div[@class='card-section']/div[@class='_hUb']/a[@class='_gUb']"
 
-xpath['desc'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][3]/div[@id='rhscol']/div[@id='rhs']/div[@id='rhs_block']/ol/li[@class='g mnr-c rhsvw g-blk']/div[@class='kp-blk _m2 _Lv _KO']"
+xpath['desc'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@class='mw']/div[@id='rcnt']/div[@id='rhscol']/div[@id='rhs']/div[@id='rhs_block']/ol/li[@class='g mnr-c rhsvw kno-kp g-blk']/div[@class='kp-blk _Jw _Rqb _RJe']/div[@class='xpdopen']/div[@class='_OKe']/ol/li[@class='_DJe mod'][1]/div[@class='_cgc kno-fb-ctx']/div[@class='kno-rdesc']/span[1]"
 
-# this xpath was built by removing explicit element access (just get several xpaths and try to see a pattern) 
-xpath['summaries'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/div[@class='srg']/li[@class='g']/div[@class='rc']/div[@class='s']/div/span[@class='st']" 
+# this xpath was built by removing explicit element access (just get several xpaths and try to see a pattern)
+xpath['summaries'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@class='mw']/div[@id='rcnt']/div[@class='col'][1]/div[@id='center_col']/div[@id='res']/div[@id='search']/div/div[@id='ires']/ol[@id='rso']/div[@class='srg'][1]/li[@class='g']/div[@class='rc']/div[@class='s']/div/span[@class='st']"
 
 xpath['summaries_alternative'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/li[@class='g'][1]/div[@class='rc']/div[@class='s']/div/span[@class='st']"
 
-xpath['titles'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/div[@class='srg']/li[@class='g']/div[@class='rc']/h3[@class='r']/a"
+xpath['titles'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@class='mw']/div[@id='rcnt']/div[@class='col'][1]/div[@id='center_col']/div[@id='res']/div[@id='search']/div/div[@id='ires']/ol[@id='rso']/div[@class='srg']/li[@class='g']/div[@class='rc']/h3[@class='r']/a"
 
 xpath['titles_alternative'] = "/html/body[@id='gsr']/div[@id='main']/div[@id='cnt']/div[@id='rcnt']/div[@class='col'][2]/div[@id='center_col']/div[@id='res']/div[@id='search']/div[@id='ires']/ol[@id='rso']/li[@class='g']/div[@class='rc']/h3[@class='r']/a"
 
@@ -194,7 +193,7 @@ for image_url in args.urls:
         scrapeResult[key] = r
 
     scrapeResults[image_url] = scrapeResult
-    
+
     doc.freeDoc()
 
 

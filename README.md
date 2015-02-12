@@ -8,7 +8,8 @@ Author: Erik Rodner (https://github.com/erodner)
 Inspired by https://github.com/skyzer/google-reverse-image-search-scraper
 
 WARNING AND DISCLAIMER: The code is only intended for research purposes and only for small-scale queries. Google will immediately block your requests, when you are
-greedy (for good reason!), so use this code carefully and with proper reasoning. The authors do not take responsibility for any damage.
+greedy (for good reason!), so use this code carefully and with proper reasoning. The authors do not take responsibility for any damage. Furthermore, the website structure
+is changing continuously and in case you do not get any results, you need to modify the xpath queries in the code.
 
 Usage
 ====================================
